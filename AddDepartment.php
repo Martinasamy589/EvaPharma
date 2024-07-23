@@ -1,21 +1,26 @@
 <?php
 include "connection.php";
 
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $departmentName = $_POST['addDep'];
 
-    // Sanitize input to prevent SQL injection
-    $departmentName = mysqli_real_escape_string($conn, $departmentName);
+    $check_query = "SELECT * FROM dep WHERE name = '$departmentName'";
+    $check_result = $conn->query($check_query);
 
-    // Insert department into database
-    $sql = "INSERT INTO dep (name) VALUES ('$departmentName')";
-
-    if ($conn->query($sql) === TRUE) {
-        // Department added successfully, redirect to index.php with success message
-        header("Location: index.php?success=1");
-        exit();
+    if ($check_result->num_rows > 0) {
+        echo 'duplicate';
     } else {
-        echo "Error: " . $sql . "<br>" . $conn->error;
+        $sql = "INSERT INTO dep (name) VALUES ('$departmentName')";
+
+        if ($conn->query($sql) === TRUE) {
+            echo 'success';
+        } else {
+            echo "Error: " . $sql . "<br>" . $conn->error;
+        }
     }
 }
 

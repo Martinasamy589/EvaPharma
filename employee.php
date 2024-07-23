@@ -5,18 +5,7 @@
     <title>Employees List</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css">
     <style>
-        /* تكبير حجم الرابط */
-        .navbar-nav a {
-            font-size: 18px;
-        }
-
-        /* تخصيص لون شريط التنقل */
-        .navbar {
-            background-color: #0a58ca; /* لون كحلي أغمق */
-            color: white; /* لون النص */
-        }
-
-        /* تخصيص استايل للأقسام */
+        
         .container {
             margin-top: 50px;
         }
@@ -44,17 +33,33 @@
             text-decoration: none;
         }
 
-        /* تكبير حجم الزرار في النموذج */
         .btn-primary {
             font-size: 18px;
+        }
+        .navbar-nav a {
+            font-size: 18px;
+        }
+
+        .navbar {
+            background-color: black; 
+            color: white; 
+        }
+
+        .navbar-brand img {
+            max-height: 50px; 
+            margin-right: 10px; 
         }
     </style>
 </head>
 <body>
+   
     <!-- شريط التنقل Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container-fluid">
-            <a class="navbar-brand" href="#">Manage Departments</a>
+            <a class="navbar-brand" href="#">
+                <img src="images.png" alt="Logo"> 
+                
+            </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
                     aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
@@ -62,10 +67,10 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="#">Home</a>
+                        <a class="nav-link" href="index.php">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="reqStatus.php">Employees</a>
+                        <a class="nav-link" href="employee.php">Employees</a>
                     </li>
                 </ul>
             </div>
@@ -74,22 +79,17 @@
 
     <div class="container mt-5">
         <?php
-        // PHP code for fetching and displaying employees
-        // Include database connection
         include "connection.php";
 
-        // Function to sanitize input
         function sanitize_input($conn, $data) {
             $data = trim($data);
             $data = mysqli_real_escape_string($conn, $data);
             return $data;
         }
 
-        // Check if departmentID is set
         if (isset($_GET['departmentID'])) {
             $departmentID = $_GET['departmentID'];
 
-            // Retrieve department name
             $sql_dep = "SELECT name FROM dep WHERE departmentID = $departmentID";
             $result_dep = $conn->query($sql_dep);
 
@@ -98,14 +98,12 @@
                 $department_name = $row_dep['name'];
                 echo "<h4>Department: " . $department_name . "</h4>";
 
-                // Display employees for the selected department
                 $sql_emp = "SELECT id, name FROM employee WHERE department = '$department_name'";
                 $result_emp = $conn->query($sql_emp);
 
                 if ($result_emp->num_rows > 0) {
                     echo "<ul class='list-group'>";
                     while ($row_emp = $result_emp->fetch_assoc()) {
-                        // Display each employee name as a hyperlink with delete link
                         echo '<li class="list-group-item d-flex justify-content-between align-items-center">';
                         echo '<a href="check.php?employeeName=' . urlencode($row_emp['name']) . '">' . $row_emp['name'] . '</a>';
                         echo '<span>';
@@ -124,7 +122,6 @@
             echo "<p>No department selected.</p>";
         }
 
-        // Close database connection
         $conn->close();
         ?>
 
@@ -136,23 +133,21 @@
                 <label for="employeeName" class="form-label">Employee Name:</label>
                 <input type="text" id="employeeName" name="employeeName" class="form-control" required>
             </div>
-            <button type="submit" class="btn btn-primary">Add Employee</button>
+            <button type="submit" class="btn btn-primary"style="background-color:#e5c405;">Add Employee</button>
         </form>
     </div>
 
     <!-- JavaScript for AJAX requests and other functions -->
     <script>
-        // JavaScript function to delete employee
         function deleteEmployee(employeeID) {
             if (confirm('Are you sure you want to delete this employee?')) {
-                // Send AJAX request to deleteEmployee.php
                 var xhr = new XMLHttpRequest();
                 xhr.open('GET', 'deleteEmployee.php?employeeID=' + employeeID, true);
 
                 xhr.onload = function () {
                     if (xhr.status === 200) {
                         alert('Employee deleted successfully.');
-                        location.reload(); // Reload the page after successful deletion
+                        location.reload(); 
                     } else {
                         alert('Failed to delete employee.');
                     }
@@ -162,7 +157,6 @@
             }
         }
 
-        // Submit form using AJAX for add employee
         document.getElementById('addEmployeeForm').addEventListener('submit', function(event) {
             event.preventDefault();
             
@@ -175,8 +169,8 @@
             xhr.onload = function () {
                 if (xhr.status === 200) {
                     alert('Employee added successfully.');
-                    form.reset(); // Reset form after successful addition
-                    location.reload(); // Reload the page after successful addition
+                    form.reset(); 
+                    location.reload(); 
                 } else {
                     alert('Failed to add employee.');
                 }
@@ -186,7 +180,6 @@
         });
     </script>
 
-    <!-- Bootstrap JavaScript Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.min.js"></script>
 </body>
