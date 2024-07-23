@@ -6,7 +6,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css">
     <style>
         .survey-question {
-            margin-bottom: 20px; 
+            margin-bottom: 20px;
             border: 1px solid #ddd;
             padding: 10px;
         }
@@ -17,20 +17,18 @@
             margin-top: 10px;
         }
         .survey-question .delete-btn {
-            margin-top: 10px; 
+            margin-top: 10px;
         }
         .navbar-nav a {
             font-size: 18px;
         }
-
         .navbar {
             background-color: black;
             color: white;
         }
-
         .navbar-brand img {
-            max-height: 50px; 
-            margin-right: 10px; 
+            max-height: 50px;
+            margin-right: 10px;
         }
     </style>
 </head>
@@ -39,7 +37,7 @@
 <nav class="navbar navbar-expand-lg navbar-dark">
     <div class="container-fluid">
         <a class="navbar-brand" href="#">
-            <img src="images.png" alt="Logo"> 
+            <img src="images.png" alt="Logo">
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
                 aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -142,9 +140,9 @@
     </form>
 </div>
 
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.min.js"></script>
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
     document.getElementById('addCheckForm').addEventListener('submit', function(event) {
         event.preventDefault();
@@ -201,7 +199,7 @@
                 success: function(response) {
                     if (response.trim() === 'success') {
                         alert('Question deleted successfully.');
-                        location.reload();
+                        location.reload(); // Reload the page after successful deletion
                     } else {
                         alert('Failed to delete question.');
                     }
