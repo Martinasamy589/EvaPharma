@@ -13,7 +13,7 @@
         .survey-question label {
             font-weight: bold;
         }
-        .survey-question .checkboxes {
+        .survey-question .radio-buttons {
             margin-top: 10px;
         }
         .survey-question .delete-btn {
@@ -51,34 +51,15 @@
                 <li class="nav-item">
                     <a class="nav-link" href="employee.php">Employees</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="archivedEmployees.php">Archived Employees</a>
+                </li>
             </ul>
         </div>
     </div>
 </nav>
 
 <div class="container mt-5">
-    <h3>Add Check</h3>
-    <form id="addCheckForm">
-        <div class="mb-3">
-            <label for="checkName">Check Name:</label>
-            <input type="text" id="checkName" name="checkName" class="form-control" required>
-        </div>
-        <div class="mb-3">
-            <label for="checkType">Check Type:</label>
-            <select id="checkType" name="checkType" class="form-control" required>
-                <option value="enum">Enum</option>
-                <!-- Add more options if needed -->
-            </select>
-        </div>
-        <div class="mb-3">
-            <label for="checkOptions">Check Options (comma-separated):</label>
-            <textarea id="checkOptions" name="checkOptions" rows="4" class="form-control"></textarea>
-        </div>
-        <button type="submit" class="btn btn-primary" style="background-color:#e5c405;">Add Check</button>
-    </form>
-
-    <hr>
-
     <h3>Employee Survey</h3>
     <form id="employeeSurveyForm">
         <?php
@@ -97,38 +78,37 @@
 
             if ($result_survey->num_rows > 0) {
                 $row_survey = $result_survey->fetch_assoc();
+            } else {
+                $row_survey = [];
+            }
 
-                $sql_columns = "SHOW COLUMNS FROM employee";
-                $result_columns = $conn->query($sql_columns);
+            $sql_columns = "SHOW COLUMNS FROM employee";
+            $result_columns = $conn->query($sql_columns);
 
-                if ($result_columns->num_rows > 0) {
-                    while ($row_column = $result_columns->fetch_assoc()) {
-                        $columnName = $row_column['Field'];
-                        $columnType = $row_column['Type'];
+            if ($result_columns->num_rows > 0) {
+                while ($row_column = $result_columns->fetch_assoc()) {
+                    $columnName = $row_column['Field'];
+                    $columnType = $row_column['Type'];
 
-                        if (strpos($columnType, 'enum') !== false) {
-                            preg_match("/^enum\(\'(.*)\'\)$/", $columnType, $matches);
-                            $enumValues = explode("','", $matches[1]);
+                    if (strpos($columnType, 'enum') !== false) {
+                        preg_match("/^enum\(\'(.*)\'\)$/", $columnType, $matches);
+                        $enumValues = explode("','", $matches[1]);
 
-                            echo '<div class="survey-question">';
-                            echo '<label for="' . $columnName . '">' . ucfirst($columnName) . ':</label><br>';
-                            echo '<div class="checkboxes">';
-                            foreach ($enumValues as $value) {
-                                $checked = in_array($value, explode(",", $row_survey[$columnName])) ? 'checked' : '';
-                                echo '<input type="checkbox" id="' . $columnName . '_' . $value . '" name="' . $columnName . '[]" value="' . $value . '" ' . $checked . '>';
-                                echo '<label for="' . $columnName . '_' . $value . '">' . $value . '</label>';
-                            }
-                            echo '</div>';
-                            echo '<button type="button" class="btn btn-sm btn-danger delete-btn" data-employee-name="' . htmlspecialchars($employeeName) . '" data-column-name="' . $columnName . '">Delete Question</button>';
-                            echo '</div>';
-                            echo '<br>';
+                        echo '<div class="survey-question">';
+                        echo '<label for="' . $columnName . '">' . ucfirst($columnName) . ':</label><br>';
+                        echo '<div class="radio-buttons">';
+                        foreach ($enumValues as $value) {
+                            $checked = isset($row_survey[$columnName]) && $row_survey[$columnName] == $value ? 'checked' : '';
+                            echo '<input type="radio" id="' . $columnName . '_' . $value . '" name="' . $columnName . '" value="' . $value . '" ' . $checked . '>';
+                            echo '<label for="' . $columnName . '_' . $value . '">' . $value . '</label>';
                         }
+                        echo '</div>';
+                        echo '</div>';
+                        echo '<br>';
                     }
-                } else {
-                    echo "No enum columns found in the table.";
                 }
             } else {
-                echo "No survey data found for this employee.";
+                echo "No enum columns found in the table.";
             }
         } else {
             echo "No employee selected.";
@@ -144,26 +124,6 @@
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.min.js"></script>
 <script>
-    document.getElementById('addCheckForm').addEventListener('submit', function(event) {
-        event.preventDefault();
-
-        var formData = new FormData(this);
-        var xhr = new XMLHttpRequest();
-        xhr.open('POST', 'addCheckColumn.php', true);
-
-        xhr.onload = function() {
-            if (xhr.status === 200) {
-                var response = xhr.responseText;
-                alert(response);
-            } else {
-                alert('Error adding check.');
-            }
-            document.getElementById('addCheckForm').reset();
-        };
-
-        xhr.send(formData);
-    });
-
     document.getElementById('employeeSurveyForm').addEventListener('submit', function(event) {
         event.preventDefault();
 
@@ -174,11 +134,15 @@
         xhr.onload = function() {
             if (xhr.status === 200) {
                 var response = xhr.responseText;
-                alert(response);
+                if (response.startsWith('success:')) {
+                    alert(response);
+                    location.reload(); // Refresh the page after form submission
+                } else {
+                    alert('Error: ' + response);
+                }
             } else {
                 alert('Error submitting survey.');
             }
-            document.getElementById('employeeSurveyForm').reset();
         };
 
         xhr.send(formData);

@@ -21,29 +21,31 @@
     </style>
 </head>
 <body>
-    <!-- شريط التنقل Navbar -->
+    <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="#">
-                <img src="images.png" alt="Logo"> 
-                
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="index.php">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="employee.php">Employees</a>
-                    </li>
-                </ul>
-            </div>
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#">
+            <img src="images.png" alt="Logo">
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="index.php">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="employee.php">Employees</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="archivedEmployees.php">Archived Employees</a>
+                </li>
+            </ul>
         </div>
-    </nav>
+    </div>
+</nav>
 
     <div class="container mt-5">
         <h3>Add Department</h3>
@@ -92,7 +94,14 @@
 
     <script>
         $(document).ready(function() {
-            $('#addDepBtn').click(function() {
+            function addDepartment() {
+                var departmentName = $('#addDep').val().trim();
+
+                if (departmentName === '') {
+                    $('#message').html('<p class="mt-3 text-danger">Department name cannot be empty!</p>');
+                    return;
+                }
+
                 $.ajax({
                     url: $('#addDepForm').attr('action'),
                     type: 'POST',
@@ -100,15 +109,30 @@
                     success: function(response) {
                         if (response.trim() == 'duplicate') {
                             $('#message').html('<p class="mt-3 text-danger">Department with the same name already exists!</p>');
-                        } else if (response.trim() == 'success') {
-                            $('#message').html('<p class="mt-3 text-success">Department added successfully!</p>');
+                        } else if (response.trim().startsWith('success:')) {
+                            const departmentName = response.split(':')[1];
+                            $('#message').html('<p class="mt-3 text-success">Department "' + departmentName + '" added successfully!</p>');
                             $('#addDep').val('');
-                            $('#departmentsList').load(location.href + ' #departmentsList');
+                            $('#departmentsList').load(location.href + ' #departmentsList > *');
+                        } else if (response.trim().startsWith('error:')) {
+                            const errorMessage = response.split(':')[1];
+                            $('#message').html('<p class="mt-3 text-danger">' + errorMessage + '</p>');
                         } else {
                             $('#message').html('<p class="mt-3 text-danger">Failed to add department. Please try again.</p>');
                         }
                     }
                 });
+            }
+
+            $('#addDepBtn').click(function() {
+                addDepartment();
+            });
+
+            $('#addDep').keypress(function(e) {
+                if (e.which == 13) { // Enter key pressed
+                    e.preventDefault(); // Prevent form submission
+                    addDepartment();
+                }
             });
 
             $(document).on('click', '.delete-btn', function() {
@@ -119,16 +143,19 @@
                         type: 'GET',
                         data: { departmentID: departmentID },
                         success: function(response) {
-                            if (response.trim() == 'success') {
-                                $('#message').html('<p class="mt-3 text-success">Department deleted successfully!</p>');
-                                $('#departmentsList').load(location.href + ' #departmentsList');
+                            if (response.trim().startsWith('success:')) {
+                                const departmentName = response.split(':')[1];
+                                $('#message').html('<p class="mt-3 text-success">Department "' + departmentName + '" deleted successfully!</p>');
+                                $('#departmentsList').load(location.href + ' #departmentsList > *');
+                            } else if (response.trim().startsWith('error')) {
+                                $('#message').html('<p class="mt-3 text-danger">Failed to delete department. Please try again.</p>');
                             } else {
-                                $('#message').html('<p class="mt-3 text-danger"></p>');
+                                $('#message').html('<p class="mt-3 text-danger">Failed to delete department. Please try again.</p>');
                             }
                         },
                         error: function(xhr, status, error) {
                             console.error(xhr.responseText);
-                            $('#message').html('<p class="mt-3 text-danger">An error occurred while deleting department.</p>');
+                            $('#message').html('<p class="mt-3 text-danger">An error occurred while deleting the department.</p>');
                         }
                     });
                 }

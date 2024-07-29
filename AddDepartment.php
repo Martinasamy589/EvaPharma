@@ -6,7 +6,14 @@ if ($conn->connect_error) {
 }
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $departmentName = $_POST['addDep'];
+    $departmentName = trim($_POST['addDep']);
+
+    // Validate that department name is not empty
+    if (empty($departmentName)) {
+        echo 'error: Department name cannot be empty.';
+        $conn->close();
+        exit();
+    }
 
     $check_query = "SELECT * FROM dep WHERE name = '$departmentName'";
     $check_result = $conn->query($check_query);
@@ -17,9 +24,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $sql = "INSERT INTO dep (name) VALUES ('$departmentName')";
 
         if ($conn->query($sql) === TRUE) {
-            echo 'success';
+            echo 'success:' . $departmentName; // Include the department name in the response
         } else {
-            echo "Error: " . $sql . "<br>" . $conn->error;
+            echo "error: " . $sql . "<br>" . $conn->error;
         }
     }
 }
