@@ -5,18 +5,18 @@
     <title>Employee Survey</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css">
     <style>
-        .survey-question {
+        .survey-group {
             margin-bottom: 20px;
             border: 1px solid #ddd;
             padding: 10px;
+        }
+        .survey-question {
+            margin-bottom: 10px;
         }
         .survey-question label {
             font-weight: bold;
         }
         .survey-question .radio-buttons {
-            margin-top: 10px;
-        }
-        .survey-question .delete-btn {
             margin-top: 10px;
         }
         .navbar-nav a {
@@ -86,6 +86,10 @@
             $result_columns = $conn->query($sql_columns);
 
             if ($result_columns->num_rows > 0) {
+                $currentGroupTitle = ''; // Track current group title
+                $currentGroupSize = 0; // Track current group size
+                $groupSizes = [4, 2, 1, 2, 1, 1]; // Sizes for each group
+
                 while ($row_column = $result_columns->fetch_assoc()) {
                     $columnName = $row_column['Field'];
                     $columnType = $row_column['Type'];
@@ -93,6 +97,30 @@
                     if (strpos($columnType, 'enum') !== false) {
                         preg_match("/^enum\(\'(.*)\'\)$/", $columnType, $matches);
                         $enumValues = explode("','", $matches[1]);
+
+                        $currentGroupSize++;
+                        if ($currentGroupSize > array_sum(array_slice($groupSizes, 0, count($groupSizes) - 1))) {
+                            $groupTitle = 'welcome materials';
+                        } elseif ($currentGroupSize > array_sum(array_slice($groupSizes, 0, count($groupSizes) - 2))) {
+                            $groupTitle = 'prepare inuction';
+                        } elseif ($currentGroupSize > array_sum(array_slice($groupSizes, 0, count($groupSizes) - 3))) {
+                            $groupTitle = 'benefit service';
+                        } elseif ($currentGroupSize > array_sum(array_slice($groupSizes, 0, count($groupSizes) - 4))) {
+                            $groupTitle = 'technology set up';
+                        } elseif ($currentGroupSize > array_sum(array_slice($groupSizes, 0, count($groupSizes) - 5))) {
+                            $groupTitle = 'sign a contract';
+                        } else {
+                            $groupTitle = 'accptance & confirmation mail';
+                        }
+
+                        if ($groupTitle !== $currentGroupTitle) {
+                            if ($currentGroupTitle !== '') {
+                                echo '</div>';
+                            }
+                            echo '<div class="survey-group">';
+                            echo '<h4>' . $groupTitle . '</h4>';
+                            $currentGroupTitle = $groupTitle;
+                        }
 
                         echo '<div class="survey-question">';
                         echo '<label for="' . $columnName . '">' . ucfirst($columnName) . ':</label><br>';
@@ -107,6 +135,7 @@
                         echo '<br>';
                     }
                 }
+                echo '</div>';
             } else {
                 echo "No enum columns found in the table.";
             }
@@ -136,7 +165,7 @@
                 var response = xhr.responseText;
                 if (response.startsWith('success:')) {
                     alert(response);
-                    location.reload(); // Refresh the page after form submission
+                    location.reload(); 
                 } else {
                     alert('Error: ' + response);
                 }
@@ -163,7 +192,7 @@
                 success: function(response) {
                     if (response.trim() === 'success') {
                         alert('Question deleted successfully.');
-                        location.reload(); // Reload the page after successful deletion
+                        location.reload(); 
                     } else {
                         alert('Failed to delete question.');
                     }
