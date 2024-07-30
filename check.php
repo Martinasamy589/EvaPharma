@@ -61,89 +61,90 @@
 
 <div class="container mt-5">
     <h3>Employee Survey</h3>
-    <form id="employeeSurveyForm">
+    <form id="employeeSurveyForm" method="post" action="submitSurvey.php">
+        <!-- PHP to generate survey questions dynamically -->
         <?php
-        include "connection.php";
+            include "connection.php";
 
-        if ($conn->connect_error) {
-            die("Connection failed: " . $conn->connect_error);
-        }
-
-        if (isset($_GET['employeeName'])) {
-            $employeeName = $_GET['employeeName'];
-            echo '<input type="hidden" name="employeeName" value="' . htmlspecialchars($employeeName) . '">';
-
-            $sql_survey = "SELECT * FROM employee WHERE name = '$employeeName'";
-            $result_survey = $conn->query($sql_survey);
-
-            if ($result_survey->num_rows > 0) {
-                $row_survey = $result_survey->fetch_assoc();
-            } else {
-                $row_survey = [];
+            if ($conn->connect_error) {
+                die("Connection failed: " . $conn->connect_error);
             }
 
-            $sql_columns = "SHOW COLUMNS FROM employee";
-            $result_columns = $conn->query($sql_columns);
+            if (isset($_GET['employeeName'])) {
+                $employeeName = $_GET['employeeName'];
+                echo '<input type="hidden" name="employeeName" value="' . htmlspecialchars($employeeName) . '">';
 
-            if ($result_columns->num_rows > 0) {
-                $currentGroupTitle = ''; // Track current group title
-                $currentGroupSize = 0; // Track current group size
-                $groupSizes = [4, 2, 1, 2, 1, 1]; // Sizes for each group
+                $sql_survey = "SELECT * FROM employee WHERE name = '$employeeName'";
+                $result_survey = $conn->query($sql_survey);
 
-                while ($row_column = $result_columns->fetch_assoc()) {
-                    $columnName = $row_column['Field'];
-                    $columnType = $row_column['Type'];
-
-                    if (strpos($columnType, 'enum') !== false) {
-                        preg_match("/^enum\(\'(.*)\'\)$/", $columnType, $matches);
-                        $enumValues = explode("','", $matches[1]);
-
-                        $currentGroupSize++;
-                        if ($currentGroupSize > array_sum(array_slice($groupSizes, 0, count($groupSizes) - 1))) {
-                            $groupTitle = 'welcome materials';
-                        } elseif ($currentGroupSize > array_sum(array_slice($groupSizes, 0, count($groupSizes) - 2))) {
-                            $groupTitle = 'prepare inuction';
-                        } elseif ($currentGroupSize > array_sum(array_slice($groupSizes, 0, count($groupSizes) - 3))) {
-                            $groupTitle = 'benefit service';
-                        } elseif ($currentGroupSize > array_sum(array_slice($groupSizes, 0, count($groupSizes) - 4))) {
-                            $groupTitle = 'technology set up';
-                        } elseif ($currentGroupSize > array_sum(array_slice($groupSizes, 0, count($groupSizes) - 5))) {
-                            $groupTitle = 'sign a contract';
-                        } else {
-                            $groupTitle = 'accptance & confirmation mail';
-                        }
-
-                        if ($groupTitle !== $currentGroupTitle) {
-                            if ($currentGroupTitle !== '') {
-                                echo '</div>';
-                            }
-                            echo '<div class="survey-group">';
-                            echo '<h4>' . $groupTitle . '</h4>';
-                            $currentGroupTitle = $groupTitle;
-                        }
-
-                        echo '<div class="survey-question">';
-                        echo '<label for="' . $columnName . '">' . ucfirst($columnName) . ':</label><br>';
-                        echo '<div class="radio-buttons">';
-                        foreach ($enumValues as $value) {
-                            $checked = isset($row_survey[$columnName]) && $row_survey[$columnName] == $value ? 'checked' : '';
-                            echo '<input type="radio" id="' . $columnName . '_' . $value . '" name="' . $columnName . '" value="' . $value . '" ' . $checked . '>';
-                            echo '<label for="' . $columnName . '_' . $value . '">' . $value . '</label>';
-                        }
-                        echo '</div>';
-                        echo '</div>';
-                        echo '<br>';
-                    }
+                if ($result_survey->num_rows > 0) {
+                    $row_survey = $result_survey->fetch_assoc();
+                } else {
+                    $row_survey = [];
                 }
-                echo '</div>';
-            } else {
-                echo "No enum columns found in the table.";
-            }
-        } else {
-            echo "No employee selected.";
-        }
 
-        $conn->close();
+                $sql_columns = "SHOW COLUMNS FROM employee";
+                $result_columns = $conn->query($sql_columns);
+
+                if ($result_columns->num_rows > 0) {
+                    $currentGroupTitle = ''; // Track current group title
+                    $currentGroupSize = 0; // Track current group size
+                    $groupSizes = [4, 2, 1, 2, 1, 1]; // Sizes for each group
+
+                    while ($row_column = $result_columns->fetch_assoc()) {
+                        $columnName = $row_column['Field'];
+                        $columnType = $row_column['Type'];
+
+                        if (strpos($columnType, 'enum') !== false) {
+                            preg_match("/^enum\(\'(.*)\'\)$/", $columnType, $matches);
+                            $enumValues = explode("','", $matches[1]);
+
+                            $currentGroupSize++;
+                            if ($currentGroupSize > array_sum(array_slice($groupSizes, 0, count($groupSizes) - 1))) {
+                                $groupTitle = 'welcome materials';
+                            } elseif ($currentGroupSize > array_sum(array_slice($groupSizes, 0, count($groupSizes) - 2))) {
+                                $groupTitle = 'prepare induction';
+                            } elseif ($currentGroupSize > array_sum(array_slice($groupSizes, 0, count($groupSizes) - 3))) {
+                                $groupTitle = 'benefit service';
+                            } elseif ($currentGroupSize > array_sum(array_slice($groupSizes, 0, count($groupSizes) - 4))) {
+                                $groupTitle = 'technology set up';
+                            } elseif ($currentGroupSize > array_sum(array_slice($groupSizes, 0, count($groupSizes) - 5))) {
+                                $groupTitle = 'sign a contract';
+                            } else {
+                                $groupTitle = 'acceptance & confirmation mail';
+                            }
+
+                            if ($groupTitle !== $currentGroupTitle) {
+                                if ($currentGroupTitle !== '') {
+                                    echo '</div>';
+                                }
+                                echo '<div class="survey-group">';
+                                echo '<h4>' . $groupTitle . '</h4>';
+                                $currentGroupTitle = $groupTitle;
+                            }
+
+                            echo '<div class="survey-question">';
+                            echo '<label for="' . $columnName . '">' . ucfirst($columnName) . ':</label><br>';
+                            echo '<div class="radio-buttons">';
+                            foreach ($enumValues as $value) {
+                                $checked = isset($row_survey[$columnName]) && $row_survey[$columnName] == $value ? 'checked' : '';
+                                echo '<input type="radio" id="' . $columnName . '_' . $value . '" name="' . $columnName . '" value="' . $value . '" ' . $checked . '>';
+                                echo '<label for="' . $columnName . '_' . $value . '">' . $value . '</label>';
+                            }
+                            echo '</div>';
+                            echo '</div>';
+                            echo '<br>';
+                        }
+                    }
+                    echo '</div>';
+                } else {
+                    echo "No enum columns found in the table.";
+                }
+            } else {
+                echo "No employee selected.";
+            }
+
+            $conn->close();
         ?>
         <button type="submit" class="btn btn-primary" style="background-color:#e5c405;">Submit Survey</button>
     </form>
@@ -154,18 +155,21 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.min.js"></script>
 <script>
     document.getElementById('employeeSurveyForm').addEventListener('submit', function(event) {
-        event.preventDefault();
+        event.preventDefault(); // Prevent the default form submission
 
         var formData = new FormData(this);
+        console.log('Form Data:', Array.from(formData.entries())); // Log form data
+
         var xhr = new XMLHttpRequest();
         xhr.open('POST', 'submitSurvey.php', true);
 
         xhr.onload = function() {
+            console.log(xhr.responseText); // Log the response from the server
             if (xhr.status === 200) {
                 var response = xhr.responseText;
                 if (response.startsWith('success:')) {
                     alert(response);
-                    location.reload(); 
+                    document.getElementById('employeeSurveyForm').reset(); // Clear the form
                 } else {
                     alert('Error: ' + response);
                 }
@@ -174,34 +178,7 @@
             }
         };
 
-        xhr.send(formData);
-    });
-
-    $(document).on('click', '.delete-btn', function() {
-        var employeeName = $(this).data('employee-name');
-        var columnName = $(this).data('column-name');
-
-        if (confirm('Are you sure you want to delete this question?')) {
-            $.ajax({
-                url: 'deleteQuestion.php',
-                type: 'POST',
-                data: {
-                    employeeName: employeeName,
-                    columnName: columnName
-                },
-                success: function(response) {
-                    if (response.trim() === 'success') {
-                        alert('Question deleted successfully.');
-                        location.reload(); 
-                    } else {
-                        alert('Failed to delete question.');
-                    }
-                },
-                error: function() {
-                    alert('Error occurred while deleting question.');
-                }
-            });
-        }
+        xhr.send(formData); // Send the form data to the server
     });
 </script>
 </body>
